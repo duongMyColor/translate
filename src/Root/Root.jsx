@@ -139,21 +139,21 @@ const HistorySection = ({ history }) => (
 				borderBottom: '1px solid #e7e7e7',
 				justifyContent: 'space-between',
 				padding: '0px 20px',
-				height: '33px',
+				height: '45px',
 				boxShadow:
 					'0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 6px 0px rgba(0,0,0,0.12)',
 			}}
 		>
-			<Box sx={{ display: 'flex', gap: '5px' }}>
+			<Box sx={{ display: 'flex', gap: '10px' }}>
 				<img
 					src="image13.png"
 					alt="history-icon"
-					style={{ width: '8px', height: '8px', objectFit: 'cover' }}
+					style={{ width: '12px', height: '12px', objectFit: 'cover' }}
 				/>
 				<Box
 					sx={{
 						fontFamily: "'Inter-SemiBold', sans-serif",
-						fontSize: '8px',
+						fontSize: '12px',
 						fontWeight: 600,
 						color: '#98b8ee',
 					}}
@@ -164,14 +164,14 @@ const HistorySection = ({ history }) => (
 				<img
 					src="image13.png"
 					alt="history-icon"
-					style={{ width: '8px', height: '8px', objectFit: 'cover' }}
+					style={{ width: '12px', height: '12px', objectFit: 'cover' }}
 				/>
 				<Box
 					sx={{
 						fontFamily: "'Inter-SemiBold', sans-serif",
-						fontSize: '8px',
+						fontSize: '12px',
 						fontWeight: 600,
-						color: '#98b8ee',
+						color: '#7a7c81',
 					}}
 				>
 					Save
@@ -180,7 +180,7 @@ const HistorySection = ({ history }) => (
 			<Box
 				sx={{
 					fontFamily: "'Inter-SemiBold', sans-serif",
-					fontSize: '8px',
+					fontSize: '12px',
 					color: '#c8cdd6',
 					fontWeight: 600,
 				}}
@@ -259,7 +259,7 @@ export const Root = () => {
 	return (
 		<Box
 			sx={{
-				background: '#ffffff',
+				background: '#f3f6fb66',
 				height: 'fit-content',
 				width: 'fit-content',
 				padding: '20px',
