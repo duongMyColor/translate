@@ -73,6 +73,25 @@ ipcMain.handle("addTranslates", async (event, todo) => {
     throw new Error("Failed to add todo!");
   }
 });
+ipcMain.handle("getTranslates", async (event) => {
+  try {
+    const folderPath = path.join(__dirname, "list_translates");
+    const filePath = path.join(folderPath, "translate.json");
+
+    // Kiểm tra nếu file tồn tại
+    if (fs.existsSync(filePath)) {
+      const fileContent = fs.readFileSync(filePath, "utf-8");
+      const data = JSON.parse(fileContent || "[]");
+      return data; // Trả về nội dung file
+    } else {
+      return []; // Trả về mảng rỗng nếu file không tồn tại
+    }
+  } catch (error) {
+    console.error("Error reading translate file:", error);
+    throw new Error("Failed to read translates!");
+  }
+});
+
 
 app.whenReady().then(() => {
   createWindow();

@@ -13,5 +13,16 @@ contextBridge.exposeInMainWorld("electron", {
       throw error;
     }
   },
+  getTranslates: async () => {
+    try {
+      const response = await ipcRenderer.invoke("getTranslates");
+
+      console.log({ response });
+      return response;
+    } catch (error) {
+      console.error("Error:", error);
+      throw error;
+    }
+  },
 });
 

@@ -2,7 +2,7 @@ import React from "react";
 import { Grid, Card, CardContent, Typography, Box } from "@mui/material";
 import StarBorderOutlinedIcon from "@mui/icons-material/StarBorderOutlined";
 
-const translations = [
+const history = [
   {
     title: "English > French",
     text: "Our live chat is open 9am-8pm on weekdays, and 10am-5pm on weekends.",
@@ -34,12 +34,14 @@ const translations = [
   },
 ];
 
-export default function ListShow() {
+export default function ListShow({history}) {
   return (
     <Box sx={{ flexGrow: 1, paddingTop: 2 }}>
-      <Grid container spacing={1}>
-        {translations.map((item, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index}>
+      <Grid container spacing={1} sx={{
+           gridAutoFlow: "dense", // Cho phép các thẻ fit nhau
+      }}>
+        {history.map((item, index) => (
+          <Grid item xs={12} sm={6} md={3} key={index}>
             <Card sx={{ background: "#f3f6fb", border: "none" }}>
               <CardContent sx={{ height: "fit-content" }}>
                 <Box
@@ -78,7 +80,7 @@ export default function ListShow() {
                         justifyContent: "flex-start",
                       }}
                     >
-                      {item.title}
+                      {item.language}
                     </Box>
                   </Box>
 
@@ -96,12 +98,12 @@ export default function ListShow() {
                       color: "#8f99ad",
                       textAlign: "left",
                       fontFamily: "'Inter-SemiBold', sans-serif",
-                      fontSize: "8.800000190734863px",
-                      lineHeight: "12.56px",
+                      fontSize: "11px",
+                      lineHeight: "15px",
                       fontWeight: "600",
 
-                      width: "218px",
-                      height: "27px",
+                      width: "100%",
+                      height: "fit-content",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "flex-start",
@@ -116,11 +118,11 @@ export default function ListShow() {
                     color: "#c1c5ce",
                     textAlign: "left",
                     fontFamily: "'Inter-SemiBold', sans-serif",
-                    fontSize: "8.699999809265137px",
+                    fontSize: "10px",
                     fontWeight: "600",
-
-                    width: "195px",
-                    height: "13px",
+                    lineHeight: "15px",
+                    width: "100%",
+                    height: "fit-content",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "flex-start",
