@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const { spawn } = require("child_process");
+const fs = require("fs");
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -44,6 +45,33 @@ ipcMain.handle("translateText", (event, text) => {
       resolve(result);
     });
   });
+});
+ipcMain.handle("addTranslates", async (event, todo) => {
+  try {
+    const folderPath = path.join(__dirname, "list_translates");
+    const filePath = path.join(folderPath, "translate.json");
+
+    // Tạo folder nếu chưa tồn tại
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath);
+    }
+
+    let data = [];
+    // Đọc file nếu file đã tồn tại
+    if (fs.existsSync(filePath)) {
+      const fileContent = fs.readFileSync(filePath, "utf-8");
+      data = JSON.parse(fileContent || "[]");
+    }
+
+    // Thêm todo mới vào danh sách
+    data.push(todo);
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+
+    return "Todo added successfully!";
+  } catch (error) {
+    console.error("Error adding todo:", error);
+    throw new Error("Failed to add todo!");
+  }
 });
 
 app.whenReady().then(() => {
