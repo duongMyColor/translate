@@ -6,7 +6,7 @@ const fs = require("fs");
 function createWindow() {
   const win = new BrowserWindow({
     width: 800,
-    height: 600,
+    height: 700,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"), // Sử dụng preload
     },
@@ -38,6 +38,34 @@ function translateText(text, callback) {
     }
   });
 }
+function generateTTS(text, voiceIndex = 0) {
+  return new Promise((resolve, reject) => {
+    const pythonScript = "./translate.py"; // Adjust path if necessary
+    const pythonProcess = spawn("python", [pythonScript, text, voiceIndex]);
+
+    let result = "";
+    pythonProcess.stdout.on("data", (data) => {
+      result += data.toString();
+    });
+
+    pythonProcess.stderr.on("data", (data) => {
+      console.error(`stderr: ${data}`);
+    });
+
+    pythonProcess.on("close", () => {
+      try {
+        const parsed = JSON.parse(result);
+        if (parsed.status === "success") {
+          resolve(parsed.file);
+        } else {
+          reject(parsed.message);
+        }
+      } catch (err) {
+        reject("Failed to parse Python output");
+      }
+    });
+  });
+}
 
 ipcMain.handle("translateText", (event, text) => {
   return new Promise((resolve) => {
@@ -45,6 +73,14 @@ ipcMain.handle("translateText", (event, text) => {
       resolve(result);
     });
   });
+});
+ipcMain.handle("generateTTS", async (event, text, voiceIndex) => {
+  try {
+    const outputFile = await generateTTS(text, voiceIndex);
+    return { status: "success", file: outputFile };
+  } catch (error) {
+    return { status: "error", message: error };
+  }
 });
 ipcMain.handle("addTranslates", async (event, todo) => {
   try {

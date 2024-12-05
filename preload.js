@@ -24,5 +24,18 @@ contextBridge.exposeInMainWorld("electron", {
       throw error;
     }
   },
+  generateTTS: async (text, voiceIndex) => {
+    try {
+      const response = await ipcRenderer.invoke(
+        "generateTTS",
+        text,
+        voiceIndex
+      );
+      return response;
+    } catch (error) {
+      console.error("TTS Error:", error);
+      throw error;
+    }
+  },
 });
 
