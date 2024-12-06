@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Grid, Card, CardContent, Typography, Box } from "@mui/material";
 import StarBorderOutlinedIcon from "@mui/icons-material/StarBorderOutlined";
 import Masonry from "@mui/lab/Masonry";
 
 
 
-export default function ListShow({history}) {
+export default function ListShow({ history }) {
   return (
     <Box sx={{ flexGrow: 1, paddingTop: 2 }}>
       <Masonry columns={{ xs: 1, sm: 3, md: 4 }} spacing={1}>

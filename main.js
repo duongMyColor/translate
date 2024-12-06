@@ -9,6 +9,8 @@ function createWindow() {
     height: 700,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"), // Sử dụng preload
+      nodeIntegration: false, // Bật nodeIntegration để có thể truy cập tài nguyên từ Electron
+      contextIsolation: true 
     },
   });
 
@@ -40,7 +42,8 @@ function translateText(text, callback) {
 }
 function generateTTS(text, voiceIndex = 0) {
   return new Promise((resolve, reject) => {
-    const pythonScript = "./translate.py"; // Adjust path if necessary
+    const pythonScript = path.join(__dirname, "speachToText.py");
+
     const pythonProcess = spawn("python", [pythonScript, text, voiceIndex]);
 
     let result = "";
@@ -49,23 +52,41 @@ function generateTTS(text, voiceIndex = 0) {
     });
 
     pythonProcess.stderr.on("data", (data) => {
-      console.error(`stderr: ${data}`);
+      console.error(`Python STDERR: ${data}`);
     });
 
-    pythonProcess.on("close", () => {
+    pythonProcess.on("close", (code) => {
+      if (code !== 0) {
+        reject(`Python script exited with code ${code}`);
+        return;
+      }
+
       try {
-        const parsed = JSON.parse(result);
-        if (parsed.status === "success") {
-          resolve(parsed.file);
+        const parsedResult = JSON.parse(result);
+        if (parsedResult.status === "success") {
+          resolve(parsedResult.data); // Trả về chuỗi Base64
         } else {
-          reject(parsed.message);
+          reject(parsedResult.message || "Unknown error from Python script");
         }
       } catch (err) {
+        console.error("Failed to parse Python output:", result);
         reject("Failed to parse Python output");
       }
     });
   });
 }
+
+// Xử lý yêu cầu IPC từ frontend
+ipcMain.handle("generateTTS", async (event, text, voiceIndex) => {
+  try {
+    const base64Audio = await generateTTS(text, voiceIndex);
+    console.log("TTS generation successful, Base64 string generated.");
+    return { status: "success", audio: base64Audio }; // Trả về chuỗi Base64
+  } catch (error) {
+    console.error("TTS generation error:", error);
+    return { status: "error", message: error };
+  }
+});
 
 ipcMain.handle("translateText", (event, text) => {
   return new Promise((resolve) => {
@@ -74,14 +95,8 @@ ipcMain.handle("translateText", (event, text) => {
     });
   });
 });
-ipcMain.handle("generateTTS", async (event, text, voiceIndex) => {
-  try {
-    const outputFile = await generateTTS(text, voiceIndex);
-    return { status: "success", file: outputFile };
-  } catch (error) {
-    return { status: "error", message: error };
-  }
-});
+
+
 ipcMain.handle("addTranslates", async (event, todo) => {
   try {
     const folderPath = path.join(__dirname, "list_translates");

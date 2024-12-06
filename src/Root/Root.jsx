@@ -3,6 +3,7 @@ import { Box, TextField } from '@mui/material';
 import ListShow from '../components/ListShow';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderOutlinedIcon from '@mui/icons-material/StarBorderOutlined';
+import audioFile from '../../src/output.mp3';
 
 const HeaderPanel = ({ buttonText, detectedLang, translationLang }) => (
 	<Box
@@ -24,7 +25,7 @@ const HeaderPanel = ({ buttonText, detectedLang, translationLang }) => (
 				display: 'flex',
 				alignItems: 'center',
 				justifyContent: 'center',
-				fontWeight:800
+				fontWeight: 800,
 			}}
 		>
 			<Box
@@ -94,41 +95,99 @@ const TextInputWithDelete = ({ defaultValue, setInputText }) => (
 	</Box>
 );
 
-const FooterPanel = ({ charCount }) => (
-	<Box
-		sx={{
-			display: 'flex',
-			alignItems: 'center',
-			justifyContent: 'space-between',
-			width: '100%',
-			height: '36px',
-			padding: '0px 20px',
-		}}
-	>
-		<Box sx={{ display: 'flex', gap: '20px', padding: '0px 10px' }}>
-			<img
-				src="image20.png"
-				alt="icon1"
-				style={{ width: '7px', height: '9px', objectFit: 'cover' }}
-			/>
-			<img
-				src="image19.png"
-				alt="icon2"
-				style={{ width: '10px', height: '9px', objectFit: 'cover' }}
-			/>
-		</Box>
+const FooterPanel = ({ charCount ,inputText}) => {
+	// const [inputText, setInputText] = useState('');
+	const [voiceIndex, setVoiceIndex] = useState(0);
+	const [outputFile, setOutputFile] = useState('');
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState('');
+
+	const speachToText = async () => {
+
+		if (inputText == '') {
+			// setError('Please enter text to generate TTS.');
+			return;
+		}
+		setLoading(true);
+		setError('');
+		setOutputFile('');
+
+		// const inputText = 'Hello, what your name?';
+
+		try {
+
+
+			// index 0 là giọng nói của nữ , nói tiếng anh, index 10 tiếng việt
+			const response = await window.electron.generateTTS(inputText, 0);
+			if (response.status === 'success') {
+				const base64Audio = response.audio;
+
+				// Tạo URL Blob từ chuỗi Base64
+				const audioBlob = new Blob(
+					[Uint8Array.from(atob(base64Audio), (c) => c.charCodeAt(0))],
+					{
+						type: 'audio/mp3',
+					}
+				);
+
+				const audioURL = URL.createObjectURL(audioBlob);
+
+				// Tạo phần tử audio và phát
+				const audio = new Audio(audioURL);
+				audio.play();
+			} else {
+				setError(response.message);
+			}
+		} catch (err) {
+			setError('An error occurred while generating TTS.');
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return (
 		<Box
 			sx={{
-				fontFamily: "'Inter-SemiBold', sans-serif",
-				fontSize: '8px',
-				color: '#bec4ce',
-				fontWeight: 600,
+				display: 'flex',
+				alignItems: 'center',
+				justifyContent: 'space-between',
+				width: '100%',
+				height: '36px',
+				padding: '0px 20px',
 			}}
 		>
-			{charCount}
+			<Box sx={{ display: 'flex', gap: '20px', padding: '0px 10px' }}>
+				<img
+					src="image20.png"
+					alt="icon1"
+					style={{ width: '7px', height: '9px', objectFit: 'cover' }}
+				/>
+				<img
+					src="image19.png"
+					alt="icon2"
+					style={{ width: '10px', height: '9px', objectFit: 'cover', cursor: 'pointer' }}
+					onClick={() => speachToText()}
+
+
+				/>
+			</Box>
+			<Box
+				sx={{
+					fontFamily: "'Inter-SemiBold', sans-serif",
+					fontSize: '8px',
+					color: '#bec4ce',
+					fontWeight: 600,
+				}}
+			>
+				{charCount}
+			</Box>
+
+			{error && <p style={{ color: 'red' }}>{error}</p>}
 		</Box>
-	</Box>
-);
+	);
+};
+
+export default FooterPanel;
 
 const HistorySection = ({ history }) => (
 	<Box sx={{ width: '100%' }}>
@@ -141,7 +200,6 @@ const HistorySection = ({ history }) => (
 				justifyContent: 'space-between',
 				padding: '0px 20px',
 				height: '45px',
-				
 			}}
 		>
 			<Box sx={{ display: 'flex', gap: '10px' }}>
@@ -257,136 +315,139 @@ export const Root = () => {
 	}, []);
 
 	return (
-    <Box
-      sx={{
-        background: "#f3f6fb66",
-        height: "fit-content",
-        width: "fit-content",
-        padding: "20px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "20px",
-        border: "1px solid #e0e0e0",
-        boxShadow:
-          "0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 6px 0px rgba(0,0,0,0.12)",
-        // overflowY:'auto' ,
-        maxWidth: "1300px",
-      }}
-    >
-      {/* Panel Section */}
-      <Box
-        sx={{
-          display: "flex",
-          position: "relative",
-          border: "1px solid #e0e0e0",
-        }}
-      >
-        {/* Left Panel */}
-        <Box sx={{ width: "50%" }}>
-          <HeaderPanel
-            buttonText="Detect language"
-            detectedLang="Ukrainian"
-            translationLang="English"
-          />
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              height: {
-                sm: "200px",
-                md: "250px",
-              },
-              borderBottom: "1px solid #e0e0e0",
-            }}
-          >
-            <TextField
-              id="standard-multiline-static"
-              inputRef={inputRef}
-              multiline
-              rows={6}
-              // placeholder="Enter text"
-              sx={{
-                width: "100%",
-                "& .MuiOutlinedInput-root": { border: "none" },
-                "& .MuiOutlinedInput-notchedOutline": {
-                  border: "none",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  border: "none",
-                },
-                "& .MuiOutlinedInput-input": { padding: 0 },
-              }}
-              value={inputText} // Liên kết giá trị với state
-              onChange={onchangeInput}
-            />
+		<Box
+			sx={{
+				background: '#f3f6fb66',
+				height: 'fit-content',
+				width: 'fit-content',
+				padding: '20px',
+				display: 'flex',
+				flexDirection: 'column',
+				gap: '20px',
+				border: '1px solid #e0e0e0',
+				boxShadow:
+					'0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 6px 0px rgba(0,0,0,0.12)',
+				// overflowY:'auto' ,
+				maxWidth: '1300px',
+			}}
+		>
+			{/* Panel Section */}
+			<Box
+				sx={{
+					display: 'flex',
+					position: 'relative',
+					border: '1px solid #e0e0e0',
+				}}
+			>
+				{/* Left Panel */}
+				<Box sx={{ width: '50%' }}>
+					<HeaderPanel
+						buttonText="Detect language"
+						detectedLang="Ukrainian"
+						translationLang="English"
+					/>
+					<Box
+						sx={{
+							display: 'flex',
+							justifyContent: 'space-between',
+							height: {
+								sm: '200px',
+								md: '250px',
+							},
+							borderBottom: '1px solid #e0e0e0',
+						}}
+					>
+						<TextField
+							id="standard-multiline-static"
+							inputRef={inputRef}
+							multiline
+							rows={6}
+							// placeholder="Enter text"
+							sx={{
+								width: '100%',
+								'& .MuiOutlinedInput-root': { border: 'none' },
+								'& .MuiOutlinedInput-notchedOutline': {
+									border: 'none',
+								},
+								'&:hover .MuiOutlinedInput-notchedOutline': {
+									border: 'none',
+								},
+								'& .MuiOutlinedInput-input': { padding: 0 },
+							}}
+							value={inputText} // Liên kết giá trị với state
+							onChange={onchangeInput}
+						/>
 
-            <Box
-              sx={{ padding: "10px 20px", cursor: "pointer" }}
-              onClick={resetInput}
-            >
-              <img
-                src="image21.png"
-                alt="delete-icon"
-                style={{
-                  width: "8px",
-                  height: "9px",
-                  objectFit: "cover",
-                }}
-              />
-            </Box>
-          </Box>
-          <FooterPanel charCount="19/5000" />
-        </Box>
+						<Box
+							sx={{ padding: '10px 20px', cursor: 'pointer' }}
+							onClick={resetInput}
+						>
+							<img
+								src="image21.png"
+								alt="delete-icon"
+								style={{
+									width: '8px',
+									height: '9px',
+									objectFit: 'cover',
+								}}
+							/>
+						</Box>
+					</Box>
+					<FooterPanel charCount="19/5000" inputText={inputText} />
+				</Box>
 
-        <img
-          className="image22"
-          style={{
-            width: "42px",
-            height: "42px",
-            position: "absolute",
+				<img
+					className="image22"
+					style={{
+						width: '42px',
+						height: '42px',
+						position: 'absolute',
 
-            top: " 50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)" /* Đẩy con về chính giữa */,
-            objectFit: "cover",
-            cursor: "pointer",
-          }}
-          src="image22.png"
-          onClick={handleTranslate}
-        />
+						top: ' 50%',
+						left: '50%',
+						transform:
+							'translate(-50%, -50%)' /* Đẩy con về chính giữa */,
+						objectFit: 'cover',
+						cursor: 'pointer',
+					}}
+					src="image22.png"
+					onClick={handleTranslate}
+				/>
 
-        {/* Right Panel */}
-        <Box sx={{ width: "50%", background: "#f4f7fc" }}>
-          <HeaderPanel
-            buttonText="Detect language"
-            detectedLang="Ukrainian"
-            translationLang="English"
-          />
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              height: {
-                sm: "200px",
-                md: "250px",
-              },
-              padding: "15px",
-              borderBottom: "1px solid #e0e0e0",
-            }}
-          >
-            <Box sx={{ width: "100%", padding: "0 10px" }}>{outputText}</Box>
+				{/* Right Panel */}
+				<Box sx={{ width: '50%', background: '#f4f7fc' }}>
+					<HeaderPanel
+						buttonText="Detect language"
+						detectedLang="Ukrainian"
+						translationLang="English"
+					/>
+					<Box
+						sx={{
+							display: 'flex',
+							justifyContent: 'space-between',
+							height: {
+								sm: '200px',
+								md: '250px',
+							},
+							padding: '15px',
+							borderBottom: '1px solid #e0e0e0',
+						}}
+					>
+						<Box sx={{ width: '100%', padding: '0 10px' }}>
+							{outputText}
+						</Box>
 
-            <Box sx={{ padding: "0 20px" }}>
-              {/* <StarIcon /> */}
-              <StarBorderOutlinedIcon fontSize="small" />
-            </Box>
-          </Box>
-          <FooterPanel charCount="19/5000" />
-        </Box>
-      </Box>
+						<Box sx={{ padding: '0 20px' }}>
+							{/* <StarIcon /> */}
+							<StarBorderOutlinedIcon fontSize="small" />
+						</Box>
+					</Box>
+					<FooterPanel charCount="19/5000" />
+				</Box>
+			</Box>
 
-      {/* History Section */}
-      <HistorySection history={history} />
-    </Box>
-  );
+			{/* History Section */}
+			<HistorySection history={history} />
+		</Box>
+	);
 };
