@@ -37,5 +37,15 @@ contextBridge.exposeInMainWorld("electron", {
       throw error;
     }
   },
+
+  runSpeakToText: async () => {
+    try {
+      const response = await ipcRenderer.invoke("runSpeakToText");
+      return response;
+    } catch (error) {
+      console.error("Speech-to-Text Error:", error);
+      throw error;
+    }
+  }
 });
 

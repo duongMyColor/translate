@@ -95,7 +95,7 @@ const TextInputWithDelete = ({ defaultValue, setInputText }) => (
 	</Box>
 );
 
-const FooterPanel = ({ charCount ,inputText}) => {
+const FooterPanel = ({ charCount ,inputText,handleSpeechToText}) => {
 	// const [inputText, setInputText] = useState('');
 	const [voiceIndex, setVoiceIndex] = useState(0);
 	const [outputFile, setOutputFile] = useState('');
@@ -120,21 +120,21 @@ const FooterPanel = ({ charCount ,inputText}) => {
 			// index 0 là giọng nói của nữ , nói tiếng anh, index 10 tiếng việt
 			const response = await window.electron.generateTTS(inputText, 0);
 			if (response.status === 'success') {
-				const base64Audio = response.audio;
+				// const base64Audio = response.audio;
 
 				// Tạo URL Blob từ chuỗi Base64
-				const audioBlob = new Blob(
-					[Uint8Array.from(atob(base64Audio), (c) => c.charCodeAt(0))],
-					{
-						type: 'audio/mp3',
-					}
-				);
+				// const audioBlob = new Blob(
+				// 	[Uint8Array.from(atob(base64Audio), (c) => c.charCodeAt(0))],
+				// 	{
+				// 		type: 'audio/mp3',
+				// 	}
+				// );
 
-				const audioURL = URL.createObjectURL(audioBlob);
+				// const audioURL = URL.createObjectURL(audioBlob);
 
-				// Tạo phần tử audio và phát
-				const audio = new Audio(audioURL);
-				audio.play();
+				// // Tạo phần tử audio và phát
+				// const audio = new Audio(audioURL);
+				// audio.play();
 			} else {
 				setError(response.message);
 			}
@@ -160,7 +160,8 @@ const FooterPanel = ({ charCount ,inputText}) => {
 				<img
 					src="image20.png"
 					alt="icon1"
-					style={{ width: '7px', height: '9px', objectFit: 'cover' }}
+					style={{ width: '7px', height: '9px', objectFit: 'cover',cursor: 'pointer'  }}
+					onClick={() => handleSpeechToText()}
 				/>
 				<img
 					src="image19.png"
@@ -264,6 +265,23 @@ export const Root = () => {
 			addTodo(result.translated_text);
 		});
 	};
+
+
+	const handleSpeechToText = async () => {
+
+		setInputText('');  // Xóa văn bản hiện tại
+		try {
+		  const result = await window.electron.runSpeakToText();
+	
+		  if (result.status === "success") {
+			setInputText(result.text);  // Cập nhật state với văn bản nhận diện được
+		  } else {
+			console.error(result.message);  // Xử lý lỗi nếu có
+		  }
+		} catch (error) {
+		  console.error("Error invoking IPC:", error);
+		}
+	  };
 
 	const onchangeInput = (e) => {
 		setInputText(e.target.value);
@@ -393,7 +411,7 @@ export const Root = () => {
 							/>
 						</Box>
 					</Box>
-					<FooterPanel charCount="19/5000" inputText={inputText} />
+					<FooterPanel charCount="19/5000" inputText={inputText} handleSpeechToText={handleSpeechToText} />
 				</Box>
 
 				<img

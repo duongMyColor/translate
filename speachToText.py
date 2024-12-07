@@ -2,8 +2,8 @@ import asyncio
 import edge_tts
 import sys
 import json
-import base64
 import io
+from playsound import playsound  # Thư viện phát âm thanh
 
 # Danh sách giọng đọc
 VOICES = [
@@ -23,7 +23,7 @@ voice_index = int(sys.argv[2])  # Chỉ mục giọng đọc
 VOICE = VOICES[voice_index]
 
 # Hàm chính async
-async def amain() -> str:
+async def amain():
     try:
         # Tạo đối tượng Communicate
         communicate = edge_tts.Communicate(text_to_read, VOICE)
@@ -37,21 +37,21 @@ async def amain() -> str:
         # Đặt con trỏ về đầu để đọc dữ liệu
         audio_stream.seek(0)
 
-        # Mã hóa nội dung âm thanh thành Base64
-        base64_audio = base64.b64encode(audio_stream.read()).decode('utf-8')
-        return base64_audio
+        # Lưu âm thanh vào file tạm (ví dụ: "output.mp3")
+        with open("output.mp3", "wb") as f:
+            f.write(audio_stream.read())
+        
+        # Phát âm thanh từ file đã lưu
+        playsound("output.mp3")
     except Exception as e:
         return json.dumps({"status": "error", "message": str(e)})
 
-# Thực thi vòng lặp sự kiện asyncio và trả về kết quả
+# Thực thi vòng lặp sự kiện asyncio
 if __name__ == "__main__":
     loop = asyncio.get_event_loop_policy().get_event_loop()
     try:
-        # Nhận chuỗi Base64 từ hàm async
-        result = loop.run_until_complete(amain())
-        
-        # Trả chuỗi Base64 hoặc lỗi dưới dạng JSON
-        print(json.dumps({"status": "success", "data": result}))
+        # Gọi hàm async
+        loop.run_until_complete(amain())
     except Exception as e:
         print(json.dumps({"status": "error", "message": str(e)}))
     finally:

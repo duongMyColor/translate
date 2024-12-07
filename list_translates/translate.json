@@ -138,5 +138,15 @@
     "language": "English > Vietnamese",
     "text": "test",
     "translation": "Bài kiểm tra"
+  },
+  {
+    "language": "English > Vietnamese",
+    "text": "Adjusting for ambient noise... Please wait.\r\nListening... Please speak.\r\nProcessing...\r\nRecognized text: hello how are you\r\n",
+    "translation": "Điều chỉnh tiếng ồn xung quanh ... vui lòng đợi.\r\nLắng nghe ... xin vui lòng nói.\r\nXử lý...\r\nVăn bản được công nhận: Xin chào bạn có khỏe không"
+  },
+  {
+    "language": "English > Vietnamese",
+    "text": "Listening...\r\nhello how are you\r\n",
+    "translation": "Lắng nghe ...\r\nxin chào bạn khoẻ không"
   }
 ]
